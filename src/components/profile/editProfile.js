@@ -11,24 +11,27 @@ import { useRouter } from "next/router";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
+import Alert from "../alert/alert";
 
 const EditProfile = ({ dataProfile }) => {
   const router = useRouter();
   const [imgPrev, setImgPrev] = useState(null);
+  const [alert, setAlert] = useState(null);
   const [dataEdit, setDataEdit] = useState({
     name: dataProfile?.name ?? "",
-    birthday: new Date(dataProfile?.birthday) ?? "",
+    birthday:
+      dataProfile?.birthday != undefined ? new Date(dataProfile?.birthday) : "",
     height: dataProfile?.height ?? 0,
     weight: dataProfile?.weight ?? 0,
   });
 
-  const getData = async () => {
-    const response = await getProfile();
+  const showAlert = (message, type) => {
+    setAlert({ message, type });
   };
 
-  useEffect(() => {
-    // getData();
-  }, []);
+  const hideAlert = () => {
+    setAlert(null);
+  };
 
   const handleEdit = async () => {
     const data = {
@@ -37,8 +40,13 @@ const EditProfile = ({ dataProfile }) => {
       height: Number(dataEdit?.height),
       weight: Number(dataEdit?.weight),
     };
-    const response = await updateProfile(data);
-    window.location.reload();
+    if (dataEdit?.birthday == null) {
+      showAlert("Birthday can`t be Empty", "error");
+    } else {
+      const response = await updateProfile(data);
+      window.location.reload();
+    }
+    // console.log("dataEdit?.birthday", dataEdit?.birthday);
   };
 
   const handleUpload = (event) => {
@@ -51,6 +59,9 @@ const EditProfile = ({ dataProfile }) => {
 
   return (
     <div className="mb-5 p-5 rounded-2xl bg-card">
+      {alert && (
+        <Alert message={alert.message} type={alert.type} onClose={hideAlert} />
+      )}
       <div className="flex mb-5 justify-between">
         <div className="flex items-start">
           <h2 className="text-md font-bold">About</h2>
